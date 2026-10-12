@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Смирнов Данила — веб-разработчик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0e1116;
+    --bg-2: #151a22;
+    --ink: #eef1f5;
+    --muted: #7c8797;
+    --line: #232a35;
+    --accent: #c6ff3d;
+    --accent-2: #4d7cff;
+    --card: #151a22;
+    --card-2: #1a212b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    overflow-x: hidden;
+    cursor: none;
+    position: relative;
+  }
+
+  /* ================= BACKGROUND — мягкие пятна ================= */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -15%;
+    width: 70vw;
+    height: 70vw;
+    background: radial-gradient(circle, rgba(198,255,61,0.08), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(40px);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -30%;
+    right: -20%;
+    width: 80vw;
+    height: 80vw;
+    background: radial-gradient(circle, rgba(77,124,255,0.08), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(60px);
+  }
+
+  /* ================= CURSOR ================= */
+  .cursor-dot {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.08s ease, background 0.2s;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-dot.hover {
+    background: var(--accent-2);
+    transform: translate(-50%, -50%) scale(2.5);
+  }
+
+  /* NOISE */
+  .noise {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9997;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* ================= TOPBAR ================= */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    mix-blend-mode: difference;
+    color: #fff;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+  }
+  .topnav { display: flex; gap: 28px; font-size: 14px; font-weight: 500; }
+  .topnav a { color: inherit; text-decoration: none; opacity: 0.7; transition: opacity 0.2s; }
+  .topnav a:hover { opacity: 1; }
+  @media (max-width: 700px) { .topnav { display: none; } }
+
+  /* ================= HERO ================= */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 120px 32px 80px;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Водяное имя на фоне hero */
+  .hero::after {
+    content: 'SMIRNOV';
+    position: absolute;
+    right: -40px;
+    bottom: 40px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(120px, 22vw, 380px);
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(238,241,245,0.05);
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
+  }
+
+  /* ================= HERO SHAPE — ГЕКСАГОН ================= */
+  .hero-shapes {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shape-hex {
+    position: relative;
+    width: clamp(280px, 36vw, 520px);
+    height: clamp(280px, 36vw, 520px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.6s cubic-bezier(0.19,1,0.22,1);
+    will-change: transform;
+  }
+
+  /* Сам шестигранник — стеклянный с градиентом */
+  .hex-inner {
+    width: 100%;
+    height: 100%;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(135deg,
+      #c6ff3d 0%,
+      #4d7cff 50%,
+      #1a212b 100%);
+    position: relative;
+    box-shadow: 0 0 80px rgba(198,255,61,0.25);
+  }
+
+  /* Внутренний блик — даёт объём */
+  .hex-inner::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(135deg,
+      rgba(255,255,255,0.25) 0%,
+      transparent 40%,
+      transparent 60%,
+      rgba(0,0,0,0.3) 100%);
+  }
+
+  /* Диагональная полоса внутри — как на референсе */
+  .hex-inner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(115deg,
+      transparent 35%,
+      rgba(255,255,255,0.15) 45%,
+      rgba(255,255,255,0.05) 55%,
+      transparent 65%);
+  }
+
+  /* Свечение вокруг */
+  .hex-glow {
+    position: absolute;
+    inset: -40px;
+    background: radial-gradient(circle, rgba(198,255,61,0.25), transparent 65%);
+    filter: blur(30px);
+    z-index: -1;
+    animation: pulseGlow 5s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+
+  .hero .wrap {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    position: relative;
+    z-index: 5;
+  }
+
+  .hero-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 5;
+  }
+  .hero-meta span::before { content: '— '; color: var(--accent); }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(44px, 8.5vw, 120px);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    margin-bottom: 40px;
+    max-width: 900px;
+    position: relative;
+    z-index: 5;
+  }
+  .hero h1 .line {
+    display: block;
+    overflow: hidden;
+  }
+  .hero h1 .line span {
+    display: inline-block;
+    transform: translateY(110%);
+    animation: rise 1s cubic-bezier(0.19,1,0.22,1) forwards;
+  }
+  .hero h1 .line:nth-child(1) span { animation-delay: 0.1s; }
+  .hero h1 .line:nth-child(2) span { animation-delay: 0.25s; }
+  .hero h1 .line:nth-child(3) span { animation-delay: 0.4s; }
+
+  @keyframes rise { to { transform: translateY(0); } }
+
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .hero-bottom {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 48px;
+    align-items: end;
+    border-top: 1px solid var(--line);
+    padding-top: 32px;
+    width: 100%;
+    max-width: 1100px;
+    opacity: 0;
+    animation: fadeUp 1s 0.8s forwards;
+    position: relative;
+    z-index: 5;
+  }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } from { transform: translateY(20px); } }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 460px;
+  }
+
+  .hero-cta { text-align: right; }
+  .magnetic {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 28px;
+    background: var(--accent);
+    color: #0e1116;
+    border-radius: 100px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    transition: transform 0.3s cubic-bezier(0.19,1,0.22,1), background 0.3s;
+    will-change: transform;
+  }
+  .magnetic:hover { background: var(--accent-2); color: #fff; }
+  .magnetic .arrow { transition: transform 0.3s; }
+  .magnetic:hover .arrow { transform: translateX(4px); }
+
+  @media (max-width: 900px) {
+    .hero-shapes { width: 100%; opacity: 0.4; z-index: 0; }
+    .hero h1,
+    .hero-meta,
+    .hero-bottom { position: relative; z-index: 6; }
+  }
+
+  @media (max-width: 700px) {
+    .hero-bottom { grid-template-columns: 1fr; }
+    .hero-cta { text-align: left; }
+    .hero::after { font-size: 100px; right: -20px; bottom: 20px; }
+  }
+
+  @media (max-width: 600px) {
+    .hero-shapes { display: none; }
+  }
+
+  /* ================= TICKER ================= */
+  .ticker {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 20px 0;
+    position: relative;
+    z-index: 2;
+    background: rgba(14,17,22,0.6);
+    backdrop-filter: blur(6px);
+  }
+  .ticker .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .ticker-item { display: flex; align-items: center; gap: 10px; }
+  .ticker-item .num { color: var(--accent); font-weight: 500; }
+
+  @media (max-width: 700px) { .ticker { display: none; } }
+
+  /* ================= SECTIONS ================= */
+  section { padding: 110px 0; position: relative; }
+
+  .section-head {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 40px;
+    margin-bottom: 72px;
+    align-items: start;
+  }
+  @media (max-width: 800px) { .section-head { grid-template-columns: 1fr; gap: 16px; } }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    padding-top: 8px;
+  }
+  .section-num::before { content: '/ '; color: var(--accent); }
+
+  .section-head h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(30px, 4.5vw, 56px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  .section-head h2 em { font-style: italic; font-weight: 400; color: var(--accent); }
+
+  /* ================= SERVICES ================= */
+  .services-list { border-top: 1px solid var(--line); position: relative; z-index: 1; }
+  .service-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 2fr 40px;
+    gap: 32px;
+    align-items: center;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--line);
+    cursor: none;
+    transition: padding 0.4s cubic-bezier(0.19,1,0.22,1);
+    position: relative;
+  }
+  .service-row:hover { padding-left: 20px; }
+  .service-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: var(--accent);
+    transition: width 0.4s cubic-bezier(0.19,1,0.22,1);
+  }
+  .service-row:hover::before { width: 3px; }
+
+  .service-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .service-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(19px, 2.2vw, 28px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .service-desc { color: var(--muted); font-size: 15px; }
+  .service-arrow {
+    font-size: 20px;
+    transition: transform 0.4s;
+    justify-self: end;
+  }
+  .service-row:hover .service-arrow { transform: translateX(8px) rotate(-45deg); color: var(--accent); }
+
+  @media (max-width: 800px) {
+    .service-row { grid-template-columns: 1fr; gap: 8px; }
+    .service-arrow { display: none; }
+  }
+
+  /* ================= CASES ================= */
+  .cases-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .case-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.5s cubic-bezier(0.19,1,0.22,1), box-shadow 0.5s, border-color 0.3s;
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  .case-card.in { opacity: 1; transform: translateY(0); }
+  .case-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -30px rgba(198,255,61,0.15);
+    border-color: rgba(198,255,61,0.3);
+  }
+  .case-card:nth-child(1) { grid-column: span 7; }
+  .case-card:nth-child(2) { grid-column: span 5; }
+  .case-card:nth-child(3) { grid-column: span 12; }
+
+  @media (max-width: 900px) {
+    .case-card:nth-child(1),
+    .case-card:nth-child(2),
+    .case-card:nth-child(3) { grid-column: span 12; }
+  }
+
+  .case-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    margin-bottom: 20px;
+    color: var(--muted);
+  }
+  .case-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 2.4vw, 30px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  .case-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  @media (max-width: 600px) { .case-compare { grid-template-columns: 1fr; } }
+
+  .compare-box {
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--card-2);
+  }
+  .compare-box.after {
+    background: var(--accent);
+    color: #0e1116;
+    border-color: var(--accent);
+  }
+  .compare-box.after .compare-label { color: rgba(14,17,22,0.6); }
+  .compare-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    opacity: 0.6;
+  }
+  .compare-box p { font-size: 14px; line-height: 1.6; }
+
+  /* ================= STATS ================= */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 60px 0;
+    position: relative;
+    z-index: 1;
+  }
+  @media (max-width: 700px) { .stats { grid-template-columns: 1fr; gap: 28px; } }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(44px, 6vw, 80px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+  .stat-num .suffix { color: var(--accent); }
+  .stat-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ================= CONTACT ================= */
+  .contact {
+    background: var(--card);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 28px;
+    padding: 90px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .contact::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -20%;
+    width: 80%; height: 200%;
+    background: radial-gradient(circle, rgba(198,255,61,0.12), transparent 60%);
+    animation: float 12s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(60px, -40px); }
+  }
+  .contact h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(34px, 5.5vw, 72px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .contact h2 em { font-style: italic; font-weight: 400; color: var(--accent); }
+  .contact p {
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 36px;
+    position: relative;
+    font-size: 16px;
+  }
+  .contact .magnetic {
+    background: var(--accent);
+    color: #0e1116;
+    position: relative;
+  }
+  .contact .magnetic:hover { background: var(--accent-2); color: #fff; }
+
+  @media (max-width: 700px) { .contact { padding: 60px 24px; border-radius: 20px; } }
+
+  /* ================= FOOTER ================= */
+  footer {
+    padding: 44px 0 28px;
+    position: relative;
+    z-index: 1;
+  }
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a { color: inherit; text-decoration: none; transition: color 0.2s; }
+  footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursor"></div>
+<div class="noise"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">СМИРНОВ Д.</div>
+  <nav class="topnav">
+    <a href="#services">Услуги</a>
+    <a href="#cases">Кейсы</a>
+    <a href="#contact">Контакты</a>
+  </nav>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+
+  <!-- Шестигранник справа -->
+  <div class="hero-shapes" aria-hidden="true">
+    <div class="shape-hex">
+      <div class="hex-inner"></div>
+      <div class="hex-glow"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero-meta">
+      <span>Смирнов Данила</span>
+      <span>Веб-разработчик</span>
+      <span>Открыт к проектам</span>
+    </div>
+
+    <h1>
+      <span class="line"><span>Веб —</span></span>
+      <span class="line"><span>разработка</span></span>
+      <span class="line"><span><em>без воды.</em></span></span>
+    </h1>
+
+    <div class="hero-bottom">
+      <p class="hero-desc">
+        Верстаю лендинги, подключаю формы заявок к Telegram, настраиваю интеграции с CRM и правлю вёрстку. Берусь за то, что умею. Если задача не моя — скажу честно.
+      </p>
+      <div class="hero-cta">
+        <a href="https://t.me/forgetsee" class="magnetic">
+          Написать в Telegram
+          <span class="arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="wrap">
+    <div class="ticker-item"><span class="num">01</span> Лендинги</div>
+    <div class="ticker-item"><span class="num">02</span> Формы → Telegram</div>
+    <div class="ticker-item"><span class="num">03</span> Интеграции с CRM</div>
+    <div class="ticker-item"><span class="num">04</span> Правка вёрстки</div>
+    <div class="ticker-item"><span class="num">05</span> Хостинг и домен</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-num">01 — Услуги</div>
+      <h2>Что я <em>делаю</em> хорошо</h2>
+    </div>
+
+    <div class="services-list">
+      <div class="service-row">
+        <div class="service-num">01</div>
+        <div class="service-name">Лендинги по макету</div>
+        <div class="service-desc">Чистая адаптивная вёрстка. Быстро, аккуратно, с вниманием к деталям.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">02</div>
+        <div class="service-name">Форма → Telegram</div>
+        <div class="service-desc">Настрою, чтобы заявки с сайта падали вам в Telegram мгновенно и без потерь.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">03</div>
+        <div class="service-name">Интеграция с CRM</div>
+        <div class="service-desc">Свяжу сайт с amoCRM или Bitrix24, чтобы лиды не терялись в почте.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">04</div>
+        <div class="service-name">Правка вёрстки</div>
+        <div class="service-desc">Съехали блоки на мобильных? Криво отображается? Поправлю быстро.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">05</div>
+        <div class="service-name">Хостинг и домен</div>
+        <div class="service-desc">Подключу домен, настрою хостинг, перенесу сайт. Чтобы всё работало.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">06</div>
+        <div class="service-name">Консультация</div>
+        <div class="service-desc">Не уверены, что нужно? Разберу задачу и скажу, как лучше сделать.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CASES -->
+<section id="cases">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-num">02 — Кейсы</div>
+      <h2>До и <em>после</em></h2>
+    </div>
+
+    <div class="cases-grid">
+      <div class="case-card">
+        <span class="case-tag">Интеграция · Telegram</span>
+        <h3>Форма заявок для студии дизайна</h3>
+        <div class="case-compare">
+          <div class="compare-box">
+            <div class="compare-label">Было</div>
+            <p>Заявки приходили на почту, которую проверяли раз в день. Часть клиентов терялась.</p>
+          </div>
+          <div class="compare-box after">
+            <div class="compare-label">Стало</div>
+            <p>Форма подключена к Telegram-боту. Заявка приходит мгновенно. Время ответа — 5 минут.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <span class="case-tag">Вёрстка · Адаптив</span>
+        <h3>Лендинг для кофейни</h3>
+        <div class="case-compare">
+          <div class="compare-box">
+            <div class="compare-label">Было</div>
+            <p>Макет в Figma, но не было исполнителя. Сайт нужен к открытию — 3 дня.</p>
+          </div>
+          <div class="compare-box after">
+            <div class="compare-label">Стало</div>
+            <p>Сверстал за 2 дня. Адаптив, форма брони столика. Сайт запущен в срок.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <span class="case-tag">Правки · Мобильные</span>
+        <h3>Правка вёрстки интернет-магазина</h3>
+        <div class="case-compare">
+          <div class="compare-box">
+            <div class="compare-label">Было</div>
+            <p>На мобильных «съезжали» блоки, кнопка «Купить» уходила за экран. Конверсия падала.</p>
+          </div>
+          <div class="compare-box after">
+            <div class="compare-label">Стало</div>
+            <p>Поправил медиа-запросы и сетку. Блоки выровнены, кнопка на месте. Конверсия +18%.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section>
+  <div class="wrap">
+    <div class="stats">
+      <div>
+        <div class="stat-num" data-target="3">0<span class="suffix"> года</span></div>
+        <div class="stat-label">В разработке</div>
+      </div>
+      <div>
+        <div class="stat-num" data-target="7">0<span class="suffix"> дней</span></div>
+        <div class="stat-label">Средний срок сдачи</div>
+      </div>
+      <div>
+        <div class="stat-num" data-target="24">0<span class="suffix">ч</span></div>
+        <div class="stat-label">Время ответа на заявку</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact">
+      <h2>Есть <em>задача?</em></h2>
+      <p>Напишите в Telegram — посмотрю, скажу честно, возьмусь или нет. Если не моё — подскажу, куда обратиться.</p>
+      <a href="https://t.me/forgetsee" class="magnetic">
+        @forgetsee
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 Смирнов Данила</div>
+    <div><a href="https://t.me/forgetsee">Telegram →</a></div>
+  </div>
+</footer>
+
+<script>
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  });
+
+  document.querySelectorAll('a, .service-row, .case-card, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+  });
+
+  // MAGNETIC BUTTONS
+  document.querySelectorAll('.magnetic').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      btn.style.transform = `translate(${x * 0.18}px, ${y * 0.18}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'translate(0,0)';
+    });
+  });
+
+  // PARALLAX SHAPE
+  const hex = document.querySelector('.shape-hex');
+  if (hex) {
+    document.addEventListener('mousemove', e => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      hex.style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+    });
+  }
+
+  // SCROLL REVEAL
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.case-card').forEach(el => io.observe(el));
+
+  // COUNTERS
+  const counters = document.querySelectorAll('.stat-num');
+  const cio = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const el = e.target;
+        const target = +el.dataset.target;
+        const suffix = el.querySelector('.suffix').textContent;
+        let cur = 0;
+        const step = target / 40;
+        const tick = () => {
+          cur += step;
+          if (cur < target) {
+            el.innerHTML = Math.floor(cur) + '<span class="suffix">' + suffix + '</span>';
+            requestAnimationFrame(tick);
+          } else {
+            el.innerHTML = target + '<span class="suffix">' + suffix + '</span>';
+          }
+        };
+        tick();
+        cio.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  counters.forEach(c => cio.observe(c));
+</script>
+
+</body>
+</html>
